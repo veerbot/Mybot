@@ -8,67 +8,48 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    # ───────────────────────────────────────────────
-    # 1) check out your repo
-    # ───────────────────────────────────────────────
     - uses: actions/checkout@v4
 
-    # ───────────────────────────────────────────────
-    # 2) tool-chain: latest clang + lld
-    # ───────────────────────────────────────────────
-    - name: Install build dependencies
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-          clang lld ninja-build cmake zip python3 build-essential
+        sudo apt-get install -y clang lld ninja-build cmake zip python3
 
-    # ───────────────────────────────────────────────
-    # 3) clone source into engines/stockfish_src
-    # ───────────────────────────────────────────────
-    - name: Clone Stockfish source @ ce73441f
+    - name: Clone Stockfish @ ce73441f
       run: |
         git clone https://github.com/official-stockfish/Stockfish.git engines/stockfish_src
         cd engines/stockfish_src
         git checkout ce73441f2013e0b8fd3eb7a0c9fd391d52adde70
 
-    # ───────────────────────────────────────────────
-    # 4) stage-1: PGO instrumentation build (inside src/)
-    # ───────────────────────────────────────────────
-    - name: Stage 1 – PGO instrumentation build
+    # Stage 1: Instrumented build (for profile generation)
+    - name: Stage 1 – Instrumented build
       run: |
-        cd engines/stockfish_src/src
-        make -j$(nproc) profile-build ARCH=x86-64-bmi2 LTO=1 COMP=clang
+        cd engines/stockfish_src
+        cmake -B build-pgo -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_PGO_GENERATE=ON -DUSE_LTO=ON -DARCH=x86-64-bmi2
+        cmake --build build-pgo -j$(nproc)
 
-    # ───────────────────────────────────────────────
-    # 5) run bench to gather profile data
-    # ───────────────────────────────────────────────
-    - name: Run benchmark to collect profile
+    # Run benchmark to generate .profraw data
+    - name: Generate profile data
       run: |
-        cd engines/stockfish_src/src
-        ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
+        cd engines/stockfish_src
+        ./build-pgo/src/stockfish bench 64 1 15 default depth 15
 
-    # ───────────────────────────────────────────────
-    # 6) stage-2: final build with PGO + Thin-LTO
-    # ───────────────────────────────────────────────
-    - name: Stage 2 – Optimised PGO + Thin-LTO build
+    # Stage 2: Optimized final build using profile data
+    - name: Stage 2 – Optimized PGO + ThinLTO build
       run: |
-        cd engines/stockfish_src/src
-        make -j$(nproc) profile-use ARCH=x86-64-bmi2 LTO=1 COMP=clang \
-             EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
-        strip stockfish
+        cd engines/stockfish_src
+        cmake -B build-final -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+              -DCMAKE_BUILD_TYPE=Release -DUSE_PGO_USE=ON -DUSE_LTO=ON -DARCH=x86-64-bmi2
+        cmake --build build-final -j$(nproc)
+        strip build-final/src/stockfish
 
-    # ───────────────────────────────────────────────
-    # 7) package the ultra binary
-    # ───────────────────────────────────────────────
-    - name: Zip ultra binary
+    - name: Zip the binary
       run: |
-        cd engines/stockfish_src/src
-        zip ../../../stockfish_bmi2_ultra.zip stockfish
+        cd engines/stockfish_src/build-final/src
+        zip ../../../../stockfish_bmi2_ultra.zip stockfish
 
-    # ───────────────────────────────────────────────
-    # 8) upload as artifact
-    # ───────────────────────────────────────────────
-    - name: Upload compiled Stockfish
+    - name: Upload ultra Stockfish
       uses: actions/upload-artifact@v4
       with:
         name: stockfish-bmi2-ultra
