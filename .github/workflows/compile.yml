@@ -8,43 +8,66 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    # ───────────────────────────────────────────────
+    # 1) check out your repo
+    # ───────────────────────────────────────────────
+    - uses: actions/checkout@v4
 
+    # ───────────────────────────────────────────────
+    # 2) tool-chain: latest clang + lld
+    # ───────────────────────────────────────────────
     - name: Install build dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           clang lld ninja-build cmake zip python3 build-essential
 
-    # Clone Stockfish source into engines/stockfish_src
+    # ───────────────────────────────────────────────
+    # 3) clone source into engines/stockfish_src
+    # ───────────────────────────────────────────────
     - name: Clone Stockfish source @ ce73441f
       run: |
         git clone https://github.com/official-stockfish/Stockfish.git engines/stockfish_src
         cd engines/stockfish_src
         git checkout ce73441f2013e0b8fd3eb7a0c9fd391d52adde70
 
-    # Build Stockfish directly without profile-build
-    - name: Build Stockfish (no profile-build)
+    # ───────────────────────────────────────────────
+    # 4) stage-1: PGO instrumentation build (inside src/)
+    # ───────────────────────────────────────────────
+    - name: Stage 1 – PGO instrumentation build
       run: |
-        cd engines/stockfish_src
-        make -j$(nproc) ARCH=x86-64-bmi2 LTO=1 COMP=clang
+        cd engines/stockfish_src/src
+        make -j$(nproc) profile-build ARCH=x86-64-bmi2 LTO=1 COMP=clang
 
-    # Optimize with PGO and Thin-LTO
-    - name: Optimized PGO + ThinLTO build
+    # ───────────────────────────────────────────────
+    # 5) run bench to gather profile data
+    # ───────────────────────────────────────────────
+    - name: Run benchmark to collect profile
       run: |
-        cd engines/stockfish_src
-        make -j$(nproc) ARCH=x86-64-bmi2 LTO=1 COMP=clang \
+        cd engines/stockfish_src/src
+        ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
+
+    # ───────────────────────────────────────────────
+    # 6) stage-2: final build with PGO + Thin-LTO
+    # ───────────────────────────────────────────────
+    - name: Stage 2 – Optimised PGO + Thin-LTO build
+      run: |
+        cd engines/stockfish_src/src
+        make -j$(nproc) profile-use ARCH=x86-64-bmi2 LTO=1 COMP=clang \
              EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
         strip stockfish
 
-    # Zip the binary for release
+    # ───────────────────────────────────────────────
+    # 7) package the ultra binary
+    # ───────────────────────────────────────────────
     - name: Zip ultra binary
       run: |
-        cd engines/stockfish_src
-        zip ../../stockfish_bmi2_ultra.zip stockfish
+        cd engines/stockfish_src/src
+        zip ../../../stockfish_bmi2_ultra.zip stockfish
 
-    # Upload the compiled Stockfish as an artifact
+    # ───────────────────────────────────────────────
+    # 8) upload as artifact
+    # ───────────────────────────────────────────────
     - name: Upload compiled Stockfish
       uses: actions/upload-artifact@v4
       with:
