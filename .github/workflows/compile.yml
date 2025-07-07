@@ -1,7 +1,7 @@
 name: Build-Stockfish-Ultra
 
 on:
-  workflow_dispatch:  # Run manually when you want
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,42 +11,50 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y clang lld ninja-build cmake zip python3 build-essential
+        sudo apt-get install -y \
+          clang lld ninja-build cmake zip python3 build-essential
 
-    - name: Clone Stockfish @ ce73441f
+    # ───────────────────────────────────────────────────────────
+    # Clone source into engines/stockfish_src  ← NEW PATH
+    # ───────────────────────────────────────────────────────────
+    - name: Clone Stockfish source @ ce73441f
       run: |
-        mkdir -p engines
-        git clone https://github.com/official-stockfish/Stockfish.git engines/stockfish
-        cd engines/stockfish
+        git clone https://github.com/official-stockfish/Stockfish.git engines/stockfish_src
+        cd engines/stockfish_src
         git checkout ce73441f2013e0b8fd3eb7a0c9fd391d52adde70
 
-    - name: Stage 1 - PGO Instrumented Build
+    # Stage-1: instrumented build for PGO
+    - name: Stage 1 – PGO instrumentation build
       run: |
-        cd engines/stockfish
+        cd engines/stockfish_src
         make -j$(nproc) profile-build ARCH=x86-64-bmi2 LTO=1 COMP=clang
 
-    - name: Run Benchmark to Generate Profile
+    # Generate profiling data
+    - name: Run benchmark to collect profile
       run: |
-        cd engines/stockfish
+        cd engines/stockfish_src
         ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
 
-    - name: Stage 2 - Final Optimized PGO + ThinLTO Build
+    # Stage-2: final build with PGO + Thin-LTO
+    - name: Stage 2 – Optimised PGO + ThinLTO build
       run: |
-        cd engines/stockfish
+        cd engines/stockfish_src
         make -j$(nproc) profile-use ARCH=x86-64-bmi2 LTO=1 COMP=clang \
              EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
         strip stockfish
 
-    - name: Package Stockfish
+    # Package the finished engine
+    - name: Zip ultra binary
       run: |
-        cd engines/stockfish
-        zip ../../stockfish_ultra_final.zip stockfish
+        cd engines/stockfish_src
+        zip ../../stockfish_bmi2_ultra.zip stockfish
 
-    - name: Upload Compiled Stockfish
+    # Upload as workflow artifact
+    - name: Upload compiled Stockfish
       uses: actions/upload-artifact@v4
       with:
-        name: stockfish-ultra
-        path: stockfish_ultra_final.zip
+        name: stockfish-bmi2-ultra
+        path: stockfish_bmi2_ultra.zip
