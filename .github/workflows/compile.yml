@@ -17,42 +17,34 @@ jobs:
         sudo apt-get install -y \
           clang lld ninja-build cmake zip python3 build-essential
 
-    # ───────────────────────────────────────────────────────────
-    # Clone source into engines/stockfish_src  ← NEW PATH
-    # ───────────────────────────────────────────────────────────
+    # Clone Stockfish source into engines/stockfish_src
     - name: Clone Stockfish source @ ce73441f
       run: |
         git clone https://github.com/official-stockfish/Stockfish.git engines/stockfish_src
         cd engines/stockfish_src
         git checkout ce73441f2013e0b8fd3eb7a0c9fd391d52adde70
 
-    # Stage-1: instrumented build for PGO
-    - name: Stage 1 – PGO instrumentation build
+    # Build Stockfish directly without profile-build
+    - name: Build Stockfish (no profile-build)
       run: |
         cd engines/stockfish_src
-        make -j$(nproc) profile-build ARCH=x86-64-bmi2 LTO=1 COMP=clang
+        make -j$(nproc) ARCH=x86-64-bmi2 LTO=1 COMP=clang
 
-    # Generate profiling data
-    - name: Run benchmark to collect profile
+    # Optimize with PGO and Thin-LTO
+    - name: Optimized PGO + ThinLTO build
       run: |
         cd engines/stockfish_src
-        ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
-
-    # Stage-2: final build with PGO + Thin-LTO
-    - name: Stage 2 – Optimised PGO + ThinLTO build
-      run: |
-        cd engines/stockfish_src
-        make -j$(nproc) profile-use ARCH=x86-64-bmi2 LTO=1 COMP=clang \
+        make -j$(nproc) ARCH=x86-64-bmi2 LTO=1 COMP=clang \
              EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
         strip stockfish
 
-    # Package the finished engine
+    # Zip the binary for release
     - name: Zip ultra binary
       run: |
         cd engines/stockfish_src
         zip ../../stockfish_bmi2_ultra.zip stockfish
 
-    # Upload as workflow artifact
+    # Upload the compiled Stockfish as an artifact
     - name: Upload compiled Stockfish
       uses: actions/upload-artifact@v4
       with:
