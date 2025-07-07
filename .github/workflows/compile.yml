@@ -1,20 +1,20 @@
 name: Build-Stockfish-Ultra
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Run manually when you want
 
 jobs:
   build:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-    - name: Install build deps
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-          clang lld ninja-build cmake zip python3 build-essential
+        sudo apt-get install -y clang lld ninja-build cmake zip python3 build-essential
 
     - name: Clone Stockfish @ ce73441f
       run: |
@@ -23,30 +23,30 @@ jobs:
         cd engines/stockfish
         git checkout ce73441f2013e0b8fd3eb7a0c9fd391d52adde70
 
-    - name: Stage-1: Instrumented build
+    - name: Stage 1 - PGO Instrumented Build
       run: |
         cd engines/stockfish
         make -j$(nproc) profile-build ARCH=x86-64-bmi2 LTO=1 COMP=clang
 
-    - name: Run bench to collect profile data
+    - name: Run Benchmark to Generate Profile
       run: |
         cd engines/stockfish
         ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
 
-    - name: Stage-2: Optimized PGO + Thin-LTO build
+    - name: Stage 2 - Final Optimized PGO + ThinLTO Build
       run: |
         cd engines/stockfish
         make -j$(nproc) profile-use ARCH=x86-64-bmi2 LTO=1 COMP=clang \
              EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
         strip stockfish
 
-    - name: Zip binary
+    - name: Package Stockfish
       run: |
         cd engines/stockfish
-        zip ../../stockfish_bmi2_ultra.zip stockfish
+        zip ../../stockfish_ultra_final.zip stockfish
 
-    - name: Upload artifact
+    - name: Upload Compiled Stockfish
       uses: actions/upload-artifact@v4
       with:
-        name: stockfish-bmi2-ultra
-        path: stockfish_bmi2_ultra.zip
+        name: stockfish-ultra
+        path: stockfish_ultra_final.zip
