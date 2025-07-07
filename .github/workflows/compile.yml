@@ -5,48 +5,46 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04      # GitHub’s LTS runner (supports BMI2/AVX2)
+    runs-on: ubuntu-22.04
 
     steps:
-    # 0. Grab your repo so engines/ is available
     - uses: actions/checkout@v4
 
-    # 1. Toolchain – latest clang / lld for best code-gen
     - name: Install build deps
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           clang lld ninja-build cmake zip python3 build-essential
 
-    # 2. Stage-1: instrumented build to collect profile data
-    - name: Stage-1  PGO instrumentation build
+    - name: Clone Stockfish @ ce73441f
       run: |
-        cd engines/stockfish          # <-- adjust if the folder name differs
-        make -j$(nproc) profile-build \
-             ARCH=x86-64-bmi2 LTO=1 COMP=clang
+        mkdir -p engines
+        git clone https://github.com/official-stockfish/Stockfish.git engines/stockfish
+        cd engines/stockfish
+        git checkout ce73441f2013e0b8fd3eb7a0c9fd391d52adde70
 
-    # 3. Run a quick bench to generate profiling data
-    - name: Generate profile data
+    - name: Stage-1: Instrumented build
+      run: |
+        cd engines/stockfish
+        make -j$(nproc) profile-build ARCH=x86-64-bmi2 LTO=1 COMP=clang
+
+    - name: Run bench to collect profile data
       run: |
         cd engines/stockfish
         ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
 
-    # 4. Stage-2: rebuild using the captured profile + Thin-LTO
-    - name: Stage-2  PGO + Thin-LTO build
+    - name: Stage-2: Optimized PGO + Thin-LTO build
       run: |
         cd engines/stockfish
-        make -j$(nproc) profile-use \
-             ARCH=x86-64-bmi2 LTO=1 COMP=clang \
+        make -j$(nproc) profile-use ARCH=x86-64-bmi2 LTO=1 COMP=clang \
              EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
-        strip stockfish               # smaller & faster to load
+        strip stockfish
 
-    # 5. Package
-    - name: Zip ultra binary
+    - name: Zip binary
       run: |
         cd engines/stockfish
         zip ../../stockfish_bmi2_ultra.zip stockfish
 
-    # 6. Publish
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
