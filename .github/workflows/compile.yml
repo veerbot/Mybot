@@ -1,0 +1,54 @@
+name: Build-Stockfish-Ultra
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04      # GitHub’s LTS runner (supports BMI2/AVX2)
+
+    steps:
+    # 0. Grab your repo so engines/ is available
+    - uses: actions/checkout@v4
+
+    # 1. Toolchain – latest clang / lld for best code-gen
+    - name: Install build deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang lld ninja-build cmake zip python3 build-essential
+
+    # 2. Stage-1: instrumented build to collect profile data
+    - name: Stage-1  PGO instrumentation build
+      run: |
+        cd engines/stockfish          # <-- adjust if the folder name differs
+        make -j$(nproc) profile-build \
+             ARCH=x86-64-bmi2 LTO=1 COMP=clang
+
+    # 3. Run a quick bench to generate profiling data
+    - name: Generate profile data
+      run: |
+        cd engines/stockfish
+        ./stockfish bench 64 1 15 default depth 15 > /tmp/bench.log
+
+    # 4. Stage-2: rebuild using the captured profile + Thin-LTO
+    - name: Stage-2  PGO + Thin-LTO build
+      run: |
+        cd engines/stockfish
+        make -j$(nproc) profile-use \
+             ARCH=x86-64-bmi2 LTO=1 COMP=clang \
+             EXTRA_CXXFLAGS="-flto=thin -fipa-pta"
+        strip stockfish               # smaller & faster to load
+
+    # 5. Package
+    - name: Zip ultra binary
+      run: |
+        cd engines/stockfish
+        zip ../../stockfish_bmi2_ultra.zip stockfish
+
+    # 6. Publish
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: stockfish-bmi2-ultra
+        path: stockfish_bmi2_ultra.zip
