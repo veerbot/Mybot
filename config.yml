@@ -169,7 +169,7 @@ matchmaking:
   types:
     bullet:
       tc: 0.5+0
-      rated: false
+      rated: true
 
 messages:
   greeting: "Humpo Dumpo! I am {me} made by Realboy9000.Looking forward to start,good luck."
