@@ -117,7 +117,7 @@ class Chatter:
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, message)
             case 'ram':
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, self.ram_message)
-            case 'help' | 'commands':
+            case 'assist' | 'commands':
                 if chat_message.room == 'player':
                     message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !printeval, !ram'
                 else:
