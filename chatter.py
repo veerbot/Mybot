@@ -124,6 +124,10 @@ class Chatter:
                     message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !printeval, !pv, !ram'
 
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, message)
+            case _:
+                await self.api.send_chat_message(self.game_info.id_,
+                                                 chat_message.room,
+                                                 'Sorry but that command is not in my list, try !assist for a list of commands.')
 
     async def _send_last_message(self, room: str) -> None:
         last_message = self.lichess_game.last_message.replace('Engine', 'Evaluation')
