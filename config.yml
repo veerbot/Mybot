@@ -159,10 +159,10 @@ challenge:
   # - classical
   bot_modes:
     - casual
-  # - rated
+    - rated
   human_modes:
     - casual
-    - rated
+   # - rated
 
 matchmaking:
   delay: 10
@@ -180,8 +180,8 @@ messages:
   goodbye_spectators: "Thanks For watching!"
 
 whitelist:
-  - Realboy9000 
-  - Exogenetic-Bot 
+  - VEERSAMRATSINGH
+  - Supratsa
 
 books:
   Torma: "./engines/Torma.bin"
