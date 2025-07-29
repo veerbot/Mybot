@@ -191,6 +191,8 @@ messages:
 whitelist:
   - VEERSAMRATSINGH
   - Supratsa
+blacklist: 
+  - Fighterforwin
 
 books:
   Torma: "./engines/Torma.bin"
