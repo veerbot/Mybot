@@ -55,8 +55,8 @@ class Config:
         challenge_config = cls._get_challenge_config(yaml_config['challenge'])
         matchmaking_config = cls._get_matchmaking_config(yaml_config['matchmaking'])
         messages_config = cls._get_messages_config(yaml_config['messages'] or {})
-        whitelist = [string.lower() for string in yaml_config.get('whitelist') or []]
-        blacklist = [string.lower() for string in yaml_config.get('blacklist') or []]
+        whitelist = [username.lower() for username in yaml_config.get('whitelist') or []]
+        blacklist = [username.lower() for username in yaml_config.get('blacklist') or []]
 
         return cls(yaml_config.get('url', 'https://lichess.org'),
                    yaml_config['token'],
@@ -91,6 +91,8 @@ class Config:
             ['challenge', dict, 'Section `challenge` must be a dictionary with indented keys followed by colons.'],
             ['matchmaking', dict, 'Section `matchmaking` must be a dictionary with indented keys followed by colons.'],
             ['messages', dict | None, 'Section `messages` must be a dictionary with indented keys followed by colons.'],
+            ['whitelist', list | None, 'Section `whitelist` must be a list.'],
+            ['blacklist', list | None, 'Section `blacklist` must be a list.'],
             ['books', dict, 'Section `books` must be a dictionary with indented keys followed by colons.']]
         for section in sections:
             if section[0] not in config:
@@ -287,6 +289,7 @@ class Config:
             ['enabled', bool, '"enabled" must be a bool.'],
             ['priority', int, '"priority" must be an integer.'],
             ['only_without_book', bool, '"only_without_book" must be a bool.'],
+            ['use_for_variants', bool, '"use_for_variants" must be a bool.'],
             ['min_eval_depth', int, '"min_eval_depth" must be an integer.'],
             ['min_time', int, '"min_time" must be an integer.'],
             ['timeout', int, '"timeout" must be an integer.']]
@@ -302,6 +305,7 @@ class Config:
         return Lichess_Cloud_Config(lichess_cloud_section['enabled'],
                                     lichess_cloud_section['priority'],
                                     lichess_cloud_section['only_without_book'],
+                                    lichess_cloud_section['use_for_variants'],
                                     lichess_cloud_section['min_eval_depth'],
                                     lichess_cloud_section['min_time'],
                                     lichess_cloud_section['timeout'],
@@ -424,6 +428,7 @@ class Config:
     def _get_challenge_config(challenge_section: dict[str, Any]) -> Challenge_Config:
         challenge_sections = [
             ['concurrency', int, '"concurrency" must be an integer.'],
+            ['max_takebacks', int, '"max_takebacks" must be an integer.'],
             ['bullet_with_increment_only', bool, '"bullet_with_increment_only" must be a bool.'],
             ['variants', list, '"variants" must be a list of variants.'],
             ['time_controls', list | None, '"time_controls" must be a list of speeds or time controls.'],
@@ -438,6 +443,7 @@ class Config:
                 raise TypeError(f'`challenge` subsection {subsection[2]}')
 
         return Challenge_Config(challenge_section['concurrency'],
+                                challenge_section['max_takebacks'],
                                 challenge_section['bullet_with_increment_only'],
                                 challenge_section.get('min_increment'),
                                 challenge_section.get('max_increment'),
@@ -453,7 +459,7 @@ class Config:
         matchmaking_sections = [
             ['delay', int, '"delay" must be an integer.'],
             ['timeout', int, '"timeout" must be an integer.'],
-            ['selection', str, '"selection" must be "weighted_random" or "sequential".'],
+            ['selection', str, '"selection" must be one of "weighted_random", "sequential" or "cyclic".'],
             ['types', dict, '"types" must be a dictionary with indented keys followed by colons.']]
 
         for subsection in matchmaking_sections:
