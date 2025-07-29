@@ -91,7 +91,7 @@ opening_books:
 
 online_moves:
   opening_explorer:
-    enabled: false
+    enabled: true
     priority: 300
     only_without_book: false
     use_for_variants: true
@@ -113,17 +113,17 @@ online_moves:
     # max_depth: 30
 
   chessdb:
-    enabled: false                         # Activate online moves from https://chessdb.cn/queryc_en/
-    priority: 100                         # Priority with which this move source is used. Higher priority is used first.
+    enabled: true                         # Activate online moves from https://chessdb.cn/queryc_en/
+    priority: 299                        # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the chessdb should only be used if there is no matching book.
     min_candidates: 5                     # Minimum number of candidate moves.
     min_time: 20                          # Time the bot must have at least to use the online move. +10 seconds in games without increment.
     timeout: 5                            # Time the server has to respond.
-    selection: "best"                     # Move selection is one of "optimal", "best" or "good".
-    max_depth: 30
+    selection: "optimal"                     # Move selection is one of "optimal", "best" or "good".
+    #max_depth: 30
     
   online_egtb:
-    enabled: false
+    enabled: true
     min_time: 20
     timeout: 3
 
@@ -135,9 +135,9 @@ offer_draw:
   against_humans: false
 
 resign:
-  enabled: false
+  enabled: true
   score: -1000
-  consecutive_moves: 6
+  consecutive_moves: 9
   against_humans: false
 
 challenge:
@@ -148,7 +148,7 @@ challenge:
   variants:
     - standard
     - chess960
-    - antichess
+   # - antichess
     - atomic
     - kingOfTheHill
     - racingKings
@@ -173,6 +173,14 @@ matchmaking:
     bullet:
       tc: 0.5+0
       rated: true
+    utsa: 
+      tc: 1+0
+    anup:
+      tc: 3+0
+    sexy:
+      tc: 0+1
+    hot:
+      tc: 0+2
 
 messages:
   greeting: "Humpo Dumpo! I am {me} made by Realboy9000.Looking forward to start,good luck."
