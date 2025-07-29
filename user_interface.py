@@ -62,8 +62,12 @@ class User_Interface:
 
             signal.signal(signal.SIGTERM, self.signal_handler)
 
-            for command in commands:
-                await self._handle_command(command.split())
+            if commands:
+                # Short timeout to receive ongoing games first
+                await asyncio.sleep(0.5)
+
+                for command in commands:
+                    await self._handle_command(command.split())
 
             if not sys.stdin.isatty():
                 await self.game_manager_task
@@ -112,7 +116,7 @@ class User_Interface:
 
     async def _test_engines(self) -> None:
         for engine_name, engine_config in self.config.engines.items():
-            print(f'Testing engine "{engine_name}" ... ', end='')
+            print(f'Testing engine "{engine_name}" ... ', end='', flush=True)
             await Engine.test(engine_config)
             print('OK')
 
@@ -349,12 +353,3 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG)
 
     asyncio.run(User_Interface().main(args.commands, args.config, args.upgrade), debug=args.debug)
-         
-    
-
-            
-            
-           
-     
-          
-       
