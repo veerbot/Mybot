@@ -6,10 +6,10 @@ engines:
     name: "stockfish"
     ponder: true
     silence_stderr: false
-    move_overhead_multiplier: 24.0
+    move_overhead_multiplier: 18.0
     uci_options:
       Threads: 4
-      Hash: 2248
+      Hash: 3069
       Move Overhead: 100
     limits:
       # time: 20.0
@@ -82,7 +82,7 @@ opening_books:
         - White
         - Black
         - Optimus
-    humans: 
+    standard_human: 
       selection: best_move 
       names: 
         - Torma
@@ -142,6 +142,7 @@ resign:
 
 challenge:
   concurrency: 2
+  max_takebacks: 3         
   bullet_with_increment_only: false   
 # min_initial: 60
   variants:
