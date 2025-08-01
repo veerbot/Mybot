@@ -91,7 +91,7 @@ class Chatter:
             case 'creator':
                 await self.api.send_chat_message(self.game_info.id_,
                                                  chat_message.room,
-                                                 'I was made by @Realboy9000')    
+                                                 'I was made by @Supratsa')    
             case 'draw':
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, self.draw_message)
             case 'eval':
