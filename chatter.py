@@ -84,10 +84,10 @@ class Chatter:
         match chat_message.text[1:].lower():
             case 'cpu':
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, self.cpu_message)
-            case 'joke':
+            case 'roast':
                 await self.api.send_chat_message(self.game_info.id_,
                                                  chat_message.room,
-                                                 'Why did the ladder get promoted? Because it was always helping people reach the next level!')
+                                                 'You're the reason they invented the undo button')
             case 'creator':
                 await self.api.send_chat_message(self.game_info.id_,
                                                  chat_message.room,
@@ -129,7 +129,7 @@ class Chatter:
                 if chat_message.room == 'player':
                     message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !joke, !creator, !printeval, !ram'
                 else:
-                    message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !joke, !creator, !printeval, !ram'
+                    message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !roast, !creator, !printeval, !ram'
 
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, message)
             case _:
