@@ -87,7 +87,7 @@ class Chatter:
             case 'roast':
                 await self.api.send_chat_message(self.game_info.id_,
                                                  chat_message.room,
-                                                 'You're the reason they invented the undo button')
+                                                 'You are the reason they invented the undo button')
             case 'creator':
                 await self.api.send_chat_message(self.game_info.id_,
                                                  chat_message.room,
