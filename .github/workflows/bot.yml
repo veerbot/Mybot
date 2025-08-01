@@ -30,14 +30,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: 'pip'
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
@@ -47,24 +40,20 @@ jobs:
 
       - name: Make Stockfish Executable
         run: | 
-          chmod +x ./engines/stockfish
-          chmod +x ./engines/fairy-stockfish_x86-64-bmi2
+             chmod +x ./engines/stockfish
+             chmod +x ./engines/fairy-stockfish_x86-64-bmi2
 
-      - name: Run Bot (Continuous with Auto-Restart)
+      - name: Run Bot
         run: |
-          echo "Starting continuous bot loop..."
-          END=$((SECONDS + 20700))  # ~5h 45m total
-          SESSION_TIME=2700         # 45 minutes per session
-          while [ $SECONDS -lt $END ]; do
-            echo "Launching bot instance..."
-            python3 -u user_interface.py "matchmaking" &
-            PID=$!
-            # Kill bot after 45 minutes to restart
-            ( sleep $SESSION_TIME && echo "Restarting bot..." && kill -SIGTERM $PID ) &
-            wait $PID
-            echo "Bot restarted..."
-          done
-          echo "Loop finished. Preparing workflow restart..."
+          echo "Starting bot..."
+          python3 -u user_interface.py &
+          PID=$!
+          
+          # Auto-exit after 350 minutes (so restart runs without overlap)
+          ( sleep 2700 && echo "Time up. Killing bot..." && kill -SIGTERM $PID ) &
+          
+          wait $PID
+          echo "Bot ended cleanly."
 
       - name: 🔁 Self-Restart (Fire-and-Forget)
         if: always()
