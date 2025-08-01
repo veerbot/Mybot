@@ -6,10 +6,10 @@ engines:
     name: "stockfish"
     ponder: true
     silence_stderr: false
-    move_overhead_multiplier: 18.0
+    move_overhead_multiplier: 20.0
     uci_options:
       Threads: 4
-      Hash: 3069
+      Hash: 2069
       Move Overhead: 100
     limits:
       # time: 20.0
@@ -96,7 +96,7 @@ online_moves:
     only_without_book: false
     use_for_variants: true
     min_time: 20
-    timeout: 5
+    timeout: 2
     min_games: 10
     only_with_wins: true
     selection: "win_rate"
@@ -104,12 +104,12 @@ online_moves:
     # max_depth: 20
 
   lichess_cloud:
-    enabled: false
+    enabled: true
     priority: 200
     only_without_book: false
     min_eval_depth: 20
     min_time: 10
-    timeout: 3
+    timeout: 2
     use_for_variants: true
     # max_depth: 30
 
@@ -119,7 +119,7 @@ online_moves:
     only_without_book: false              # Whether the chessdb should only be used if there is no matching book.
     min_candidates: 5                     # Minimum number of candidate moves.
     min_time: 20                          # Time the bot must have at least to use the online move. +10 seconds in games without increment.
-    timeout: 5                            # Time the server has to respond.
+    timeout: 2                            # Time the server has to respond.
     selection: "optimal"                     # Move selection is one of "optimal", "best" or "good".
     #max_depth: 30
     
@@ -184,7 +184,7 @@ matchmaking:
       tc: 0+2
 
 messages:
-  greeting: "Humpo Dumpo! I am {me} made by Realboy9000.Looking forward to start,good luck."
+  greeting: "Humpo Dumpo! I am {me} made by @Supratsa owned by @VEERSAMRATSINGH .Looking forward to start,good luck."
   goodbye: "Good game!How about a rematch?"
   greeting_spectators: "Hey, I'm running on {engine} .Type !help for a list of commands."
   goodbye_spectators: "Thanks For watching!"
