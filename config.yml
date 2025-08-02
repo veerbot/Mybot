@@ -101,6 +101,7 @@ online_moves:
     only_with_wins: true
     selection: "win_rate"
     anti: true
+    player: Classic_BOT_v2
     # max_depth: 20
 
   lichess_cloud:
@@ -134,12 +135,14 @@ offer_draw:
   consecutive_moves: 10
   min_game_length: 30
   against_humans: false
+  min_rating: 3000
 
 resign:
   enabled: true
   score: -1000
   consecutive_moves: 9
   against_humans: false
+  min_rating: 3000
 
 challenge:
   concurrency: 2
