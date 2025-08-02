@@ -59,7 +59,7 @@ gaviota:
   max_pieces: 5
 
 opening_books:
-  enabled: false
+  enabled: true
   priority: 900
   books:
 #   standard:
@@ -91,7 +91,7 @@ opening_books:
 
 online_moves:
   opening_explorer:
-    enabled: false
+    enabled: true
     priority: 300
     only_without_book: false
     use_for_variants: true
@@ -105,9 +105,9 @@ online_moves:
     # max_depth: 20
 
   lichess_cloud:
-    enabled: false
+    enabled: true
     priority: 200
-    only_without_book: false
+    only_without_book: true
     min_eval_depth: 20
     min_time: 10
     timeout: 2
@@ -115,7 +115,7 @@ online_moves:
     # max_depth: 30
 
   chessdb:
-    enabled: false                       # Activate online moves from https://chessdb.cn/queryc_en/
+    enabled: true                     # Activate online moves from https://chessdb.cn/queryc_en/
     priority: 250                        # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the chessdb should only be used if there is no matching book.
     min_candidates: 5                     # Minimum number of candidate moves.
