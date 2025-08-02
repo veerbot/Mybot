@@ -230,6 +230,13 @@ class Lichess_Game:
         if not self.engine.opponent.is_engine and not self.config.offer_draw.against_humans:
             return False
 
+        if (
+            self.config.offer_draw.min_rating is not None and   
+            self.engine.opponent.rating is not None and   
+            self.engine.opponent.rating < self.config.offer_draw.min_rating
+        ):  
+            return False  
+
         if not self.increment and self.opponent_time < 10.0:
             return False
 
@@ -255,6 +262,13 @@ class Lichess_Game:
         if not self.engine.opponent.is_engine and not self.config.resign.against_humans:
             return False
 
+        if (
+            self.config.resign.min_rating is not None and   
+            self.engine.opponent.rating is not None and   
+            self.engine.opponent.rating < self.config.resign.min_rating
+        ):  
+            return False  
+        
         if not self.increment and self.opponent_time < 10.0:
             return False
 
@@ -364,7 +378,10 @@ class Lichess_Game:
         if out_of_book or too_deep or out_of_range or too_many_moves or not has_time:
             return
 
-        if self.config.online_moves.opening_explorer.anti:
+        if self.config.online_moves.opening_explorer.player:
+            color = 'white' if self.board.turn else 'black'
+            username = self.config.online_moves.opening_explorer.player
+        elif self.config.online_moves.opening_explorer.anti:
             color = 'black' if self.board.turn else 'white'
             username = self.game_info.black_name if self.board.turn else self.game_info.white_name
         else:
