@@ -9,7 +9,7 @@ engines:
     move_overhead_multiplier: 20.0
     uci_options:
       Threads: 4
-      Hash: 2069
+      Hash: 2048
       Move Overhead: 100
     limits:
       # time: 20.0
@@ -101,7 +101,7 @@ online_moves:
     only_with_wins: true
     selection: "win_rate"
     anti: true
-    player: Classic_BOT_v2
+    player: NimsiluBot
     # max_depth: 20
 
   lichess_cloud:
@@ -116,7 +116,7 @@ online_moves:
 
   chessdb:
     enabled: true                         # Activate online moves from https://chessdb.cn/queryc_en/
-    priority: 299                        # Priority with which this move source is used. Higher priority is used first.
+    priority: 250                        # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the chessdb should only be used if there is no matching book.
     min_candidates: 5                     # Minimum number of candidate moves.
     min_time: 20                          # Time the bot must have at least to use the online move. +10 seconds in games without increment.
