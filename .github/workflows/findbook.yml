@@ -1,4 +1,4 @@
-name: Download and Upload LesChats Book
+name: Download LesChats Book and Push via LFS
 
 on:
   workflow_dispatch:
@@ -6,40 +6,35 @@ on:
 jobs:
   download-and-upload:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          lfs: true   # Enable LFS support
+    - name: Checkout repository (with LFS support)
+      uses: actions/checkout@v4
+      with:
+        lfs: true
 
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y p7zip-full git-lfs
-          git lfs install
+    - name: Install Git LFS
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git-lfs
+        git lfs install
 
-      - name: Download Book Archive
-        run: |
-          curl -L -o LesChats.7z "https://katfile.com/7oilfdkhbe5i/LesChats24042025_bin.7z.html"
+    - name: Download LesChats Book
+      run: |
+        curl -L -o leschats.bin https://pixeldrain.com/u/S4YWq4Wb
 
-      - name: Extract Book File
-        run: |
-          7z x LesChats.7z
-          # Assuming the extracted file has .bin extension
-          mv *.bin leschats.bin
+    - name: Move into engines directory
+      run: |
+        mkdir -p engines
+        mv leschats.bin engines/
 
-      - name: Move Book to Engines Folder
-        run: |
-          mkdir -p engines
-          mv leschats.bin engines/
-
-      - name: Track with Git LFS
-        run: |
-          git lfs track "engines/leschats.bin"
-          git add .gitattributes engines/leschats.bin
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git commit -m "Add leschats.bin via workflow"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Track with Git LFS and commit
+      run: |
+        git lfs track "engines/leschats.bin"
+        git add .gitattributes engines/leschats.bin
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git commit -m "Add LesChats opening book via workflow"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
