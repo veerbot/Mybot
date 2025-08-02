@@ -127,7 +127,7 @@ class Chatter:
                 await self.api.send_chat_message(self.game_info.id_, chat_message.room, self.ram_message)
             case 'assist' | 'commands':
                 if chat_message.room == 'player':
-                    message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !joke, !creator, !printeval, !ram'
+                    message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !roast, !creator, !printeval, !ram'
                 else:
                     message = 'Supported commands: !cpu, !draw, !eval, !motor, !name, !roast, !creator, !printeval, !ram'
 
@@ -227,3 +227,4 @@ class Chatter:
             final_message = initial_message
 
         return final_message
+#sarakshi , ahona , polulomi , arja , ennakshi sexiest podma rani girls ever
