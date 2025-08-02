@@ -28,19 +28,21 @@ jobs:
         mkdir -p engines
         mv leschats.bin engines/
 
-    - name: Configure Git with PAT
-      run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "github-actions@github.com"
-        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
-
     - name: Track with Git LFS and commit
       run: |
         git lfs track "engines/leschats.bin"
         git add .gitattributes engines/leschats.bin
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
         if git diff --cached --quiet; then
           echo "No changes to commit."
         else
           git commit -m "Add LesChats opening book via workflow"
-          git push
         fi
+
+    - name: Force remote to use PAT and push
+      run: |
+        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
+        echo "Remote URL after reset:"
+        git remote -v
+        git push
