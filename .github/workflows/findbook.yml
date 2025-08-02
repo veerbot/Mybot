@@ -1,7 +1,7 @@
 name: Download LesChats Book and Push via LFS
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Trigger manually (safe for large files)
 
 jobs:
   download-and-upload:
@@ -21,12 +21,15 @@ jobs:
 
     - name: Download LesChats Book
       run: |
+        echo "Downloading from Pixeldrain..."
         curl -L -o leschats.bin https://pixeldrain.com/u/S4YWq4Wb
+        ls -lh leschats.bin
 
     - name: Move into engines directory
       run: |
         mkdir -p engines
         mv leschats.bin engines/
+        echo "File moved to engines/"
 
     - name: Track with Git LFS and commit
       run: |
@@ -34,7 +37,12 @@ jobs:
         git add .gitattributes engines/leschats.bin
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git commit -m "Add LesChats opening book via workflow"
-        git push
+
+        if git diff --cached --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m "Add LesChats opening book via workflow"
+          git push
+        fi
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # Use your personal access token
