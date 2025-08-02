@@ -46,11 +46,11 @@ jobs:
       - name: Run Bot
         run: |
           echo "Starting bot..."
-          python3 -u user_interface.py &
+          python3 -u user_interface.py "tournament DThV9CtM" &
           PID=$!
           
           # Auto-exit after 350 minutes (so restart runs without overlap)
-          ( sleep 2700 && echo "Time up. Killing bot..." && kill -SIGTERM $PID ) &
+          ( sleep 20700 && echo "Time up. Killing bot..." && kill -SIGTERM $PID ) &
           
           wait $PID
           echo "Bot ended cleanly."
@@ -60,3 +60,4 @@ jobs:
         run: gh workflow run bot.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
