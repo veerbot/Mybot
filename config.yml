@@ -78,7 +78,7 @@ opening_books:
       selection: best_move 
     # max depth : 69 
       names:
-        - Stay
+       # - Stay
         - White
         - Black
         - Optimus
