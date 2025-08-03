@@ -71,6 +71,7 @@ opening_books:
       selection: best_move 
     # max depth : 69 
       names:
+        - lila
         - Stay
         - Win
         - Black
@@ -78,7 +79,7 @@ opening_books:
       selection: best_move 
     # max depth : 69 
       names:
-       # - Stay
+        - lilawhite
         - White
         - Black
         - Optimus
@@ -206,3 +207,5 @@ books:
   White: "./engines/white.bin"
   Titans: "./engines/Titans.bin"
   Stay: "./engines/terimakichud.bin"
+  lila: "./engines/lila.bin"
+  lilawhite: "./engines/lilawhite.bin"
