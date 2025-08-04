@@ -164,10 +164,10 @@ challenge:
   # - rapid
   # - classical
   bot_modes:
-  #  - casual
- #   - rated
+    - casual
+    - rated
   human_modes:
-  #  - casual
+    - casual
    # - rated
 
 matchmaking:
@@ -186,6 +186,7 @@ matchmaking:
       tc: 0+1
     hot:
       tc: 0+2
+      variant: chess960
 
 messages:
   greeting: "Humpo Dumpo! I am {me} made by @Supratsa owned by @VEERSAMRATSINGH .Looking forward to start,good luck."
