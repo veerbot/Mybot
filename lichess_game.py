@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import random
 import struct
 import time
@@ -86,18 +87,19 @@ class Lichess_Game:
 
     @staticmethod
     def _get_engine_key(config: Config, board: chess.Board, is_white: bool, game_info: Game_Information) -> str:
-        color = 'white' if is_white else 'black'
-        is_human = game_info.white_title != 'BOT' or game_info.black_title != 'BOT'
+        suffixes: list[str] = []
+        if game_info.white_title != 'BOT' or game_info.black_title != 'BOT':
+            suffixes.append('human')
+        if game_info.tournament_id is not None:
+            suffixes.append('tournament')
+        suffixes.append('white' if is_white else 'black')
 
         def check_engine_key(base_name: str) -> str | None:
-            if is_human and f'{base_name}_human' in config.engines:
-                return f'{base_name}_human'
-
-            if f'{base_name}_{color}' in config.engines:
-                return f'{base_name}_{color}'
-
-            if base_name in config.engines:
-                return base_name
+            for i in range(len(suffixes), -1, -1):
+                for p in itertools.permutations(suffixes, i):
+                    key = f'{base_name}_{"_".join(p)}' if p else base_name
+                    if key in config.engines:
+                        return key
 
         if board.uci_variant == 'chess':
             if board.chess960:
@@ -105,6 +107,9 @@ class Lichess_Game:
                     return key
 
             else:
+                if key := check_engine_key(game_info.tc_str):
+                    return key
+
                 if key := check_engine_key(game_info.speed):
                     return key
 
@@ -231,11 +236,11 @@ class Lichess_Game:
             return False
 
         if (
-            self.config.offer_draw.min_rating is not None and   
-            self.engine.opponent.rating is not None and   
+            self.config.offer_draw.min_rating is not None and
+            self.engine.opponent.rating is not None and
             self.engine.opponent.rating < self.config.offer_draw.min_rating
-        ):  
-            return False  
+        ):
+            return False
 
         if not self.increment and self.opponent_time < 10.0:
             return False
@@ -263,12 +268,12 @@ class Lichess_Game:
             return False
 
         if (
-            self.config.resign.min_rating is not None and   
-            self.engine.opponent.rating is not None and   
+            self.config.resign.min_rating is not None and
+            self.engine.opponent.rating is not None and
             self.engine.opponent.rating < self.config.resign.min_rating
-        ):  
-            return False  
-        
+        ):
+            return False
+
         if not self.increment and self.opponent_time < 10.0:
             return False
 
@@ -334,18 +339,19 @@ class Lichess_Game:
                               for name, path in books_config.names.items()})
 
     def _get_book_key(self) -> str | None:
-        color = 'white' if self.is_white else 'black'
-        is_human = self.game_info.white_title != 'BOT' or self.game_info.black_title != 'BOT'
+        suffixes: list[str] = []
+        if self.game_info.white_title != 'BOT' or self.game_info.black_title != 'BOT':
+            suffixes.append('human')
+        if self.game_info.tournament_id is not None:
+            suffixes.append('tournament')
+        suffixes.append('white' if self.is_white else 'black')
 
         def check_book_key(base_name: str) -> str | None:
-            if is_human and f'{base_name}_human' in self.config.opening_books.books:
-                return f'{base_name}_human'
-
-            if f'{base_name}_{color}' in self.config.opening_books.books:
-                return f'{base_name}_{color}'
-
-            if base_name in self.config.opening_books.books:
-                return base_name
+            for i in range(len(suffixes), -1, -1):
+                for p in itertools.permutations(suffixes, i):
+                    key = f'{base_name}_{"_".join(p)}' if p else base_name
+                    if key in self.config.opening_books.books:
+                        return key
 
         if self.board.uci_variant != 'chess':
             for alias in map(str.lower, self.board.aliases):
@@ -359,6 +365,9 @@ class Lichess_Game:
                 return key
 
         else:
+            if key := check_book_key(self.game_info.tc_str):
+                return key
+
             if key := check_book_key(self.game_info.speed):
                 return key
 
@@ -515,7 +524,9 @@ class Lichess_Game:
             self._reduce_own_time(time.perf_counter() - start_time)
             return
 
-        if response['status'] != 'rate limit exceeded':
+        if response['status'] == 'rate limit exceeded':
+            print('ChessDB: rate limit exceeded')
+        else:
             asyncio.create_task(self.api.queue_chessdb(fen))
 
         if response['status'] != 'ok':
@@ -895,7 +906,7 @@ class Lichess_Game:
 
         if self.config.online_moves.chessdb.enabled:
             if not self.config.online_moves.chessdb.only_without_book or not self.book_settings.readers:
-                if self.board.uci_variant == 'chess':
+                if self.board.uci_variant == 'chess' and not self.board.chess960:
                     opening_sources[self._make_chessdb_move] = self.config.online_moves.chessdb.priority
 
         move_sources += [opening_source
