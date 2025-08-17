@@ -198,7 +198,7 @@ whitelist:
   - VEERSAMRATSINGH
   - Supratsa
 blacklist: 
-  - Fighterforwin
+  - NimsiluBot
 
 books:
   Torma: "./engines/Torma.bin"
