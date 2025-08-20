@@ -1,0 +1,13 @@
+name: Check CPU Flags on GitHub Actions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-flags:
+    runs-on: windows-latest
+    steps:
+      - name: Print CPU Info (PowerShell)
+        run: |
+          Get-CimInstance Win32_Processor | Select-Object -Property Name, Manufacturer, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, ProcessorId
+          wmic cpu get caption, deviceid, name, numberofcores, maxclockspeed, status
