@@ -69,6 +69,7 @@ opening_books:
 #       - DefaultBook    
     standard_black:
       selection: best_move 
+      allow_repetitions: true  
     # max depth : 69 
       names:
      #   - lila
@@ -77,6 +78,7 @@ opening_books:
         - Black
     standard_white:
       selection: best_move 
+      allow_repetitions: true  
     # max depth : 69 
       names:
         - Stay
@@ -85,6 +87,7 @@ opening_books:
         - Optimus
     standard_human: 
       selection: best_move 
+      allow_repetitions: false 
       names: 
         - Torma
         - Titans
@@ -96,6 +99,7 @@ online_moves:
     priority: 300
     only_without_book: false
     use_for_variants: true
+    allow_repetitions: true  
     min_time: 20
     timeout: 2
     min_games: 10
@@ -113,6 +117,8 @@ online_moves:
     min_time: 10
     timeout: 2
     use_for_variants: false
+    allow_repetitions: true              # Whether the cloud can create repetitions on the board. Can lead to unintentional draws.
+    trust_eval: false 
     # max_depth: 30
 
   chessdb:
@@ -122,7 +128,9 @@ online_moves:
     min_candidates: 5                     # Minimum number of candidate moves.
     min_time: 20                          # Time the bot must have at least to use the online move. +10 seconds in games without increment.
     timeout: 2                            # Time the server has to respond.
-    selection: "optimal"                     # Move selection is one of "optimal", "best" or "good".
+    selection: "optimal"
+    allow_repetitions: true              # Whether the cloud can create repetitions on the board. Can lead to unintentional draws.
+    trust_eval: false # Move selection is one of "optimal", "best" or "good".
     #max_depth: 30
     
   online_egtb:
