@@ -131,7 +131,13 @@ class Game_Manager:
         self.changed_event.set()
 
     async def _process_tournament_request(self, tournament_request: Tournament_Request) -> None:
+        if tournament_request.id_ in self.unstarted_tournaments:
+            return
+
         if tournament_request.id_ in self.tournaments:
+            return
+
+        if tournament_request.id_ in {tournament.id_ for tournament in self.tournaments_to_join}:
             return
 
         tournament_info = await self.api.get_tournament_info(tournament_request.id_)
@@ -195,6 +201,7 @@ class Game_Manager:
 
         del self.tournaments[tournament.id_]
         print(f'Tournament "{tournament.name}" has ended.')
+        self._set_next_matchmaking(self.config.matchmaking.delay)
         self.changed_event.set()
 
     def _set_next_matchmaking(self, delay: int) -> None:
