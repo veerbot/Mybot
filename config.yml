@@ -154,7 +154,7 @@ resign:
   min_rating: 3000
 
 challenge:
-  concurrency: 2
+  concurrency: 1
   max_takebacks: 3         
   bullet_with_increment_only: false   
 # min_initial: 60
